@@ -104,14 +104,8 @@ sector_same_segment:
     loop sector_loop
 
 sector_same_segment_2:
-    /* video mode: 320x200 @ 16 colors */
-    movb $0x00, %ah
-    movb $0x13, %al
-    int $0x10
-    //cli
-    //hlt
-    //ljmp 0x11000
-
+    lcall $0x1100,$0x0000
+sector_same_segment_3:
     /* enable A20 line */
     cli
 
@@ -150,7 +144,7 @@ flush:
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
-    movw %ax, %ss
+    movw %ax, %ss	
     movl $0x3000, %esp
     ljmp $0x8, $entry32
 
@@ -267,11 +261,6 @@ gdt_end:
 idt:
     .word 0
     .long 0
-.fill 256-(.-_start), 1, 0
-jmp sector_same_segment_2
 /* MBR BOOT SIGNATURE */
 .fill 510-(.-_start), 1, 0
 .word 0xAA55
- 
-vesa_buffer:
-    .space 0x100

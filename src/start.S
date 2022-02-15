@@ -13,15 +13,83 @@ _start:
     call _main
     cli
     hlt
-/*
+
 .section .text.VESA
 .code16
 
 VESA_stuff:
+    
+    pusha
+    mov %cs, %ax
+    mov %ax, %es
+    mov %ax, %ds
+    
+    mov $0x0e, %ah
+    mov $0x65, %al
+    int $0x10
+    
+    mov $(VESA_test_str - VESA_stuff), %esi
+    call print
+    
+    mov $0x4f00, %ax
+    mov $(VESA_info_buffer - VESA_stuff), %di
+    int $0x10
+    
+    /* video mode: 320x200 @ 16 colors */
+    //movb $0x00, %ah
+    //movb $0x13, %al
+    //int $0x10
+    
+    cmp $0x004f, %ax
+    jne VESA_error
+
+VESA_info_success:
+    movw $(VESA_success_str - VESA_stuff), %si
+    call print
     cli
     hlt
-    ljmp 0x7c00
-*/
+    
+    
+VESA_error:
+    movw $(VESA_error_str - VESA_stuff), %si
+    call print
+    jmp VESA_ret
+    cli
+    hlt
+    
+VESA_ret:
+    //return to boot sector
+    popa
+    retf
+    
+VESA_info_buffer:
+    .space 0x20
+VESA_mode_buffer:
+    .space 0x100
+VESA_test_str:
+    .asciz "VESA code reached\n\r"
+VESA_success_str:
+    .asciz "VESA info produced successfully\n\r"
+VESA_error_str:
+    .asciz "Error collecting VESA info\n\r"
+
+/* prints string in %ds:si */
+print:
+    xorb %bh, %bh
+    movb $0x0E, %ah
+
+    lodsb
+
+    /* NULL check */
+    cmpb $0, %al
+    je print_ret
+
+    /* print %al to screen */
+    int $0x10
+    jmp print
+
+print_ret:  ret
+
 .section .text
 
 .code32

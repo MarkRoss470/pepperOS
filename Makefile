@@ -56,7 +56,9 @@ bootsect: $(BOOTSECT_OBJS)
 	$(LD) -o ./bin/$(BOOTSECT) $^ -Ttext 0x7C00 --oformat=binary
 
 kernel: $(KERNEL_OBJS)
-	$(LD) -o ./bin/$(KERNEL) $^ $(LDFLAGS) -Tsrc/link.ld
+	$(LD) -o ./bin/kernel.elf $^ $(LDFLAGS) -Tsrc/link.ld --oformat=elf32-i386
+	$(LD) -o ./bin/$(KERNEL) $^ $(LDFLAGS) -Tsrc/link.ld --oformat=binary
+	objcopy --only-keep-debug -I elf32-i386 ./bin/kernel.elf bin/kernel.sym
 
 img: dirs bootsect kernel
 	rm -f $(IMG)
@@ -71,7 +73,7 @@ install: img
 	sudo dd if=boot.img of=/dev/sda status=progress
 
 qemu-mac: img
-	qemu-system-i386 -drive format=raw,file=$(IMG) -monitor stdio
+	qemu-system-i386 -drive format=raw,file=$(IMG) -monitor stdio #-singlestep -S --gdb tcp::6000
 qemu-pulse: img
 	qemu-system-i386 -drive format=raw,file=$(IMG) -d cpu_reset -monitor stdio -device sb16 -audiodev pulseaudio,id=pulseaudio,out.frequency=48000,out.channels=2,out.format=s32
 
