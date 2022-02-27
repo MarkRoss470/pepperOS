@@ -1,7 +1,7 @@
 UNAME := $(shell uname)
 
 ifeq ($(UNAME),Linux)
-	CC=gcc -elf_i386 -x c
+	CC=gcc -elf_i386
 	AS=as --32
 	LD=ld -m elf_i386
 else
@@ -11,7 +11,7 @@ else
 endif
 
 GFLAGS=
-CCFLAGS=-m32 -std=c11 -O2 -g -Wall -Wextra -Wpedantic -Wstrict-aliasing
+CCFLAGS=-m32 -std=c11 -g -O2 -Wall -Wextra -Wpedantic -Wstrict-aliasing
 CCFLAGS+=-Wno-pointer-arith -Wno-unused-parameter
 CCFLAGS+=-nostdlib -ffreestanding -fno-pie -fno-stack-protector
 CCFLAGS+=-fno-builtin-function -fno-builtin
@@ -26,7 +26,7 @@ BOOTSECT_OBJS=$(patsubst src/%.S,build/%.o,$(BOOTSECT_SRCS))
 KERNEL_C_SRCS=$(shell find . -name "*.c")
 KERNEL_S_SRCS=$(filter-out $(BOOTSECT_SRCS), $(wildcard src/*.S))
 
-KERNEL_OBJS=$(patsubst ./src/%.c,./build/%.o,$(KERNEL_C_SRCS)) $(patsubst src/%.S,build/%.o,$(KERNEL_S_SRCS)) 
+KERNEL_OBJS=$(patsubst ./src/%.c,./build/%.o,$(KERNEL_C_SRCS)) $(patsubst src/%.S,build/%.o,$(KERNEL_S_SRCS))
 
 BOOTSECT=bootsect.bin
 KERNEL=kernel.bin
@@ -40,10 +40,13 @@ clean:
 	find . -name \*.img -type f -delete
 	find . -name \*.elf -type f -delete
 	find . -name \*.bin -type f -delete
+	@echo $(KERNEL_H_SRCS)
+	@echo
+	@echo $(KERNEL_OBJS)
 
 build/%.o : src/%.c
 	mkdir -p $(dir $@)
-	$(CC) -o $@ -c $< $(GFLAGS) $(CCFLAGS)
+	$(CC) -o $@ -x c -c $< $(GFLAGS) $(CCFLAGS)
 
 build/%.o : src/%.S
 	mkdir -p $(dir $@)
@@ -73,7 +76,7 @@ install: img
 	sudo dd if=boot.img of=/dev/sda status=progress
 
 qemu-mac: img
-	qemu-system-i386 -drive format=raw,file=$(IMG) -monitor stdio #-singlestep -S --gdb tcp::6000
+	qemu-system-i386 -drive format=raw,file=$(IMG) -vga std -monitor stdio -S --gdb tcp::6000
 qemu-pulse: img
 	qemu-system-i386 -drive format=raw,file=$(IMG) -d cpu_reset -monitor stdio -device sb16 -audiodev pulseaudio,id=pulseaudio,out.frequency=48000,out.channels=2,out.format=s32
 

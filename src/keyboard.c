@@ -27,8 +27,8 @@ u8 keyboard_layout_us[2][128] = {
     }
 };
 
-struct Keyboard keyboard;
-struct Keybuffer keybuffer;
+volatile struct Keyboard keyboard;
+volatile struct Keybuffer keybuffer;
 
 // bad hack! for a better RNG
 static bool seeded = false;

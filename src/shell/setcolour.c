@@ -15,8 +15,8 @@ int setcolour(int argc, char *argv[])
 	}
 	bool foundcolour = false;
 	
-	uint8_t newtextcolour = textColour;
-	uint8_t newbackgroundcolour = backgroundColour;
+	uint32_t newtextcolour = textColour;
+	uint32_t newbackgroundcolour = backgroundColour;
 	
 	for(int i = 0; i < num_colours; i++)
 	{
@@ -52,9 +52,9 @@ int setcolour(int argc, char *argv[])
 			return(1);
 		}
 	}
-	for(uint16_t x = 0; x < 320; x++)
+	for(uint16_t x = 0; x < VESA_chosen_mode_buffer.width; x++)
 	{
-		for(uint16_t y = 0; y < 240; y++)
+		for(uint16_t y = 0; y < VESA_chosen_mode_buffer.height; y++)
 		{
 			set_pixel(x, y, (get_pixel(x, y) == textColour) ? newtextcolour : newbackgroundcolour);
 		}

@@ -1,4 +1,5 @@
 #include "idt.h"
+#include <stdint.h>
 
 struct __attribute__((__packed__)) IDTEntry{
     u16 offset_low;
@@ -34,6 +35,9 @@ void idt_set(u8 index, void (*base)(struct Registers*), u16 selector, u8 flags) 
 void idt_init() {
     idt.pointer.limit = sizeof(idt.entries) - 1;
     idt.pointer.base = (uintptr_t) &idt.entries[0];
-    memset(&idt.entries[0], 0, sizeof(idt.entries));
+    for(size_t i = 0; i < sizeof(idt.entries); i++)
+    {
+    	((uint8_t*)idt.entries)[i] = 0;
+    }
     idt_load((uintptr_t) &idt.pointer);
 }

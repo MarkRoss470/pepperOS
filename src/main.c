@@ -6,7 +6,6 @@
 #include "isr.h"
 #include "irq.h"
 #include "timer.h"
-#include "font.h"
 #include "system.h"
 #include "keyboard.h"
 #include "fpu.h"
@@ -106,7 +105,9 @@ void handle_keyboard()
 		}
 		
 		keybuffer.start++;
-		
+	}
+	else
+	{
 		char input_with_blank[INPUT_BUFFER_SIZE];
 		strlcpy(input_with_blank, input_text, input_length+1);
 		input_with_blank[input_length] = ' ';
@@ -117,12 +118,15 @@ void handle_keyboard()
 }
 
 void _main(u32 magic) {
+	screen_init();
 	idt_init();
 	isr_init();
 	irq_init();
 	keyboard_init();
 	timer_init();
-	screen_init();
+	
+	screen_buffer_clear(0);
+	screen_clear(0);
 	
 	putchar('>');
 	screen_swap();

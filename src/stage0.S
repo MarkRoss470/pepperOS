@@ -103,9 +103,8 @@ sector_same_segment:
     pop %cx
     loop sector_loop
 
-sector_same_segment_2:
+    //jump to code that chooses VESA video mode    
     lcall $0x1100,$0x0000
-sector_same_segment_3:
     /* enable A20 line */
     cli
 

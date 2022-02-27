@@ -29,21 +29,21 @@
 static void (*handlers[32])(struct Registers *regs) = { 0 };
 
 char numberBuffer[30];
-uint16_t testColour = 0;
+uint32_t testColour = 0;
 static void stub(struct Registers *regs) {
-    //*/
+    /*
     //if(regs->int_no != 32)
     {
-    	draw_text(itoa(regs->int_no, numberBuffer, 30), 210, 0, 0, (testColour++)/10);
+    	draw_text(itoa(regs->int_no, numberBuffer, 30), 210, 0, 0, testColour++);
     	screen_swap();
     }
     if(regs->int_no != 32)
     {
-    	draw_text(itoa(regs->int_no, numberBuffer, 30), 230, 0, 0, 0xff);
+    	draw_text(itoa(regs->int_no, numberBuffer, 30), 230, 0, 0, 0xffffff);
     	screen_swap();
     }
-    //*/
-    
+    */
+
     if (regs->int_no <= 47 && regs->int_no >= 32) {
         if (handlers[regs->int_no - 32]) {
             handlers[regs->int_no - 32](regs);

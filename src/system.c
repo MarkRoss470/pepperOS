@@ -1,6 +1,6 @@
 #include "system.h"
 #include "screen.h"
-#include "font.h"
+#include "graphics.h"
 #include "timer.h"
 
 #define NOTIFICATION_DURATION_TICKS (TIMER_TPS * 2)
@@ -34,10 +34,10 @@ u32 rand() {
 }
 
 void panic(const char *err) {
-    screen_clear(COLOR(7, 0, 0));
+    screen_clear(0xff0000);
 
     if (err != NULL) {
-        font_str(err, (SCREEN_WIDTH - font_width(err)) / 2, SCREEN_HEIGHT / 2 - 4, COLOR(7, 7, 3));
+        draw_text(err, 0, 0, 0xffffff, 0xff0000);
     }
 
     screen_swap();

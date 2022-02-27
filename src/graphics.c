@@ -4,14 +4,14 @@
 #include "util/strings.h"
 #include "util/math.h"
 
-uint8_t textColour = 0xff;
-uint8_t backgroundColour = 0x00;
+uint32_t textColour = 0xffffff;
+uint32_t backgroundColour = 0x000000;
 
 //draws a rectange with the upper left corner at a specified position, and with a specified width, height, and colour.
 //returns zero on success, one otherwise
-int draw_rect(uint16_t xPos, uint16_t yPos, uint16_t width, uint16_t height, uint8_t colour)
+int draw_rect(uint16_t xPos, uint16_t yPos, uint16_t width, uint16_t height, uint32_t colour)
 {
-	if((xPos+width) > 320 || (yPos+height) > 240)return(1);
+	if((xPos+width) > VESA_chosen_mode_buffer.width || (yPos+height) > VESA_chosen_mode_buffer.height)return(1);
 	for(int x = xPos; x < (xPos + width); x++)
 	{
 		for(int y = yPos; y < (yPos + height); y++)
@@ -22,13 +22,7 @@ int draw_rect(uint16_t xPos, uint16_t yPos, uint16_t width, uint16_t height, uin
 	return(0);
 }
 
-//clears the screen with a certain colour
-void clear_screen(uint8_t colour)
-{
-	draw_rect(0, 0, 320, 240, colour);
-}
-
-int draw_text_highlight(char* string, uint16_t xPos, uint16_t yPos, uint8_t textColour, uint8_t backgroundColour, int cursor_pos)
+int draw_text_highlight(const char* string, uint16_t xPos, uint16_t yPos, uint32_t textColour, uint32_t backgroundColour, int cursor_pos)
 {
 	int i = 0;
 	uint16_t charstartx = xPos;
@@ -60,7 +54,7 @@ int draw_text_highlight(char* string, uint16_t xPos, uint16_t yPos, uint8_t text
 		}
 		i++;
 		charstartx += 10;
-		if(charstartx > 310)
+		if(charstartx > VESA_chosen_mode_buffer.width)
 		{
 			charstartx = 0;
 			charstarty += 10;
@@ -69,7 +63,7 @@ int draw_text_highlight(char* string, uint16_t xPos, uint16_t yPos, uint8_t text
 	return(i);
 }
 
-int draw_text(char* string, uint16_t xPos, uint16_t yPos, uint8_t textColour, uint8_t backgroundColor)
+int draw_text(const char* string, uint16_t xPos, uint16_t yPos, uint32_t textColour, uint32_t backgroundColor)
 {
 	return(draw_text_highlight(string, xPos, yPos, textColour, backgroundColor, -1));
 }
@@ -124,7 +118,7 @@ void draw_mario(int pose)
 		{
 			int pixelcolour = mario[pose][y][x];
 			//int pixelcolour = (x%3)+(y%3);
-			uint8_t VGAcolour = 0;
+			uint32_t VGAcolour = 0;
 			if (pixelcolour == 0)
 			{
 				//white
@@ -133,23 +127,23 @@ void draw_mario(int pose)
 			else if (pixelcolour == 1)
 			{
 				//red
-				VGAcolour = get_colour_from_values(7, 0, 0);
+				VGAcolour = 0xff0000;
 			}
 			else if (pixelcolour == 2)
 			{
 				//brown
-				VGAcolour = get_colour_from_values(4, 4, 0);
+				VGAcolour = 0xbbbb00;
 			}
 			else if (pixelcolour == 3)
 			{
 				//skin tone
-				VGAcolour = get_colour_from_values(7, 6, 0);
+				VGAcolour = 0xffdd00;
 			}
 			draw_rect(x * 10, y * 10, 10, 10, VGAcolour);
 		}
 	}
 	
-	draw_text("Mario", 0, 160, 0xff, 0x00);
+	draw_text("Mario", 0, 160, 0xffffff, 0x000000);
 }
 
 int line = 0;
@@ -183,12 +177,12 @@ void putchar(char c)
 	}
 	column++;
 
-	if(column > 31)
+	if(column > VESA_chosen_mode_buffer.width/10)
 	{
 		column = 0;
 		line++;
 	}
-	if(line > 18)
+	if(line > VESA_chosen_mode_buffer.height/10 - 4)
 	{
 		scroll_screen(10, 0);
 		line--;
@@ -490,7 +484,7 @@ int printf(char* format, ...)
 	return num_chars;
 }
 
-void draw_line(uint16_t startX, uint16_t startY, uint16_t endX, uint16_t endY, uint8_t colour)
+void draw_line(uint16_t startX, uint16_t startY, uint16_t endX, uint16_t endY, uint32_t colour)
 {
 	float gradient = ((float)(endY - startY)) / ((float)(endX - startX));
 	for(uint16_t x = startX; x <= endX; x++)

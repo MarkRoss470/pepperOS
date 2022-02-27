@@ -18,7 +18,8 @@ static const char shell_builtins_names[][30] = {
 	"lsacpi",
 	"enableacpi",
 	"poweroff",
-	"lsapic"
+	"lsapic",
+	"calibrate",
 };
 
 static int (*shell_builtins_functions[]) (int argc, char *argv[]) = {
@@ -34,7 +35,8 @@ static int (*shell_builtins_functions[]) (int argc, char *argv[]) = {
 	lsacpi,
 	enableacpi,
 	poweroff,
-	lsapic
+	lsapic,
+	calibrate_screen
 };
 
 int help(int argc, char *argv[])

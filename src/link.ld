@@ -1,5 +1,6 @@
 OUTPUT_FORMAT("binary")
 ENTRY(_start)
+
 SECTIONS
 {
     . = 0x10000;
@@ -11,7 +12,6 @@ SECTIONS
         *(.text.VESA)
         *(.text)
     }
-
     .rodata BLOCK(4K) : ALIGN(4K)
     {
         *(.rodata)
@@ -21,7 +21,9 @@ SECTIONS
     {
         *(.data)
     }
-
+    
+    . = 0x100000;
+    
     .bss BLOCK(4K) : ALIGN(4K)
     {
         *(.bss)

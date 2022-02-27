@@ -17,11 +17,11 @@ int BOARD_HEIGHT = 0;
 #define BORDER_WIDTH 1
 
 int NUM_MINES = 0;
-#define UNKNOWN_COLOUR COLOR(2, 2, 1)
-#define UNCOVERED_COLOUR COLOR(0, 7, 0)
-#define MINE_COLOUR COLOR(7, 0, 0)
-#define BORDER_COLOUR COLOR(0, 0, 0)
-#define SELECTED_BORDER_COLOUR COLOR(7, 0, 0)
+#define UNKNOWN_COLOUR 0x444422
+#define UNCOVERED_COLOUR 0x00ff00
+#define MINE_COLOUR 0xff0000
+#define BORDER_COLOUR 0x000000
+#define SELECTED_BORDER_COLOUR 0xff0000
 
 
 struct tile
@@ -81,7 +81,7 @@ void render_board()
 	{
 		for(int y = 0; y < BOARD_HEIGHT; y++)
 		{
-			uint8_t backgroundColour;
+			uint32_t backgroundColour;
 			
 			if(board[x][y].isUncovered){
 				backgroundColour = board[x][y].isMine ? MINE_COLOUR : UNCOVERED_COLOUR;
@@ -99,7 +99,7 @@ void render_board()
 					{
 						if(numbers[board[x][y].surrounding-1][pixelY]&(1<<pixelX))
 						{
-							draw_rect(x * CELL_HEIGHT * SCALE_FACTOR + BORDER_WIDTH * SCALE_FACTOR + pixelX * SCALE_FACTOR, y * CELL_HEIGHT * SCALE_FACTOR + BORDER_WIDTH * SCALE_FACTOR + pixelY * SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR, COLOR(7, 7, 3));
+							draw_rect(x * CELL_HEIGHT * SCALE_FACTOR + BORDER_WIDTH * SCALE_FACTOR + pixelX * SCALE_FACTOR, y * CELL_HEIGHT * SCALE_FACTOR + BORDER_WIDTH * SCALE_FACTOR + pixelY * SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR, 0xffff66);
 						}
 					}
 				}
@@ -112,7 +112,7 @@ void render_board()
 					{
 						if(flag[pixelY]&(1<<(8-pixelX)))
 						{
-							draw_rect(x * CELL_HEIGHT * SCALE_FACTOR + BORDER_WIDTH * SCALE_FACTOR + pixelX * SCALE_FACTOR, y * CELL_HEIGHT * SCALE_FACTOR + BORDER_WIDTH * SCALE_FACTOR + pixelY * SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR, COLOR(7, 7, 3));
+							draw_rect(x * CELL_HEIGHT * SCALE_FACTOR + BORDER_WIDTH * SCALE_FACTOR + pixelX * SCALE_FACTOR, y * CELL_HEIGHT * SCALE_FACTOR + BORDER_WIDTH * SCALE_FACTOR + pixelY * SCALE_FACTOR, SCALE_FACTOR, SCALE_FACTOR, 0xffff66);
 						}
 					}
 				}
@@ -126,7 +126,7 @@ void render_board()
 	numberBuffer[length + 1] = '/';
 	numberBuffer[length + 2] = ' ';
 	itoa(NUM_MINES, numberBuffer + length + 3, 30);
-	draw_text(numberBuffer, 0, BOARD_HEIGHT * CELL_HEIGHT * SCALE_FACTOR, COLOR(7, 7, 3), COLOR(0, 0, 0));
+	draw_text(numberBuffer, 0, BOARD_HEIGHT * CELL_HEIGHT * SCALE_FACTOR, 0xffff66, 0x000000);
 }
 
 
@@ -172,7 +172,7 @@ int mines(int argc, char *argv[])
 		found = 0;
 		flagged = 0;
 		bool first_click = true;
-		clear_screen(0);
+		screen_clear(0);
 		for(int x = 0; x < BOARD_WIDTH; x++)
 		{
 			for(int y = 0; y < BOARD_HEIGHT; y++)
@@ -295,15 +295,15 @@ int mines(int argc, char *argv[])
 		render_board();
 		if(!gameWon)
 		{
-			draw_text("You Lose :(", 0, BOARD_HEIGHT * CELL_HEIGHT + 10, COLOR(7, 7, 3), COLOR(0, 0, 0));
-			draw_text("Play again? y/n", 0, BOARD_HEIGHT * CELL_HEIGHT + 20, COLOR(7, 7, 3), COLOR(0, 0, 0));
+			draw_text("You Lose :(", 0, BOARD_HEIGHT * CELL_HEIGHT + 10, 0xffff66, 0x000000);
+			draw_text("Play again? y/n", 0, BOARD_HEIGHT * CELL_HEIGHT + 20, 0xffff66, 0x000000);
 			screen_swap();
 			
 		}
 		else
 		{
-			draw_text("You Win :)", 0, BOARD_HEIGHT * CELL_HEIGHT + 10, COLOR(7, 7, 3), COLOR(0, 0, 0));
-			draw_text("Play again? y/n", 0, BOARD_HEIGHT * CELL_HEIGHT + 20, COLOR(7, 7, 3), COLOR(0, 0, 0));
+			draw_text("You Win :)", 0, BOARD_HEIGHT * CELL_HEIGHT + 10, 0xffff66, 0x000000);
+			draw_text("Play again? y/n", 0, BOARD_HEIGHT * CELL_HEIGHT + 20, 0xffff66, 0x000000);
 			screen_swap();
 		}
 		for(;;)

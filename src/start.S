@@ -17,18 +17,17 @@ _start:
 .section .text.VESA
 .code16
 
+
 VESA_stuff:
     
     pusha
+    push %es
+    push %ds
     mov %cs, %ax
     mov %ax, %es
     mov %ax, %ds
     
-    mov $0x0e, %ah
-    mov $0x65, %al
-    int $0x10
-    
-    mov $(VESA_test_str - VESA_stuff), %esi
+    mov $(VESA_arrived_str - VESA_stuff), %esi
     call print
     
     mov $0x4f00, %ax
@@ -46,35 +45,322 @@ VESA_stuff:
 VESA_info_success:
     movw $(VESA_success_str - VESA_stuff), %si
     call print
+    
+    movw VESA_info_buffer - VESA_stuff, %ax
+    //0x56455341 = "VESA"
+    //bytes reversed due to little endian nature of x86
+    cmpw $0x4556, %ax
+    jne VESA_invalid_signature
+    
+    movw VESA_info_buffer - VESA_stuff + 2, %ax
+    cmpw $0x4153, %ax
+    jne VESA_invalid_signature
+    
+    movw $(VESA_valid_signature_str - VESA_stuff), %si
+    call print
+    
+    //version
+    movw VESA_info_buffer - VESA_stuff + 4, %ax
+    call print_hex
+    movw $(VESA_space_str - VESA_stuff), %si
+    call print
+    //modes segment
+    movw VESA_info_buffer - VESA_stuff + 14, %ax
+    call print_hex
+    movw $(VESA_space_str - VESA_stuff), %si
+    call print
+    //modes offset
+    movw VESA_info_buffer - VESA_stuff + 16, %ax
+    call print_hex
+    movw $(VESA_ret_str - VESA_stuff), %si
+    call print
+
+VESA_print_current_mode:
+    pusha
+    push %es
+    push %di
+    
+    mov $0x4f03, %ax
+    int $0x10
+    push %ax
+    mov %bx, %ax
+    call print_hex
+    pop %ax
+    cmp $0x004f, %ax
+    jne VESA_error
+    mov %bx, %cx
+    mov $0x1100, %ax
+    mov %ax, %es
+    mov $0x4f01, %ax
+    mov $(VESA_mode_buffer - VESA_stuff), %di
+VESA_print_current_mode_int:
+    int $0x10
+    cmp $0x004f, %ax
+    jne VESA_error
+VESA_current_mode_info_get_success:
+    call VESA_print_chosen_mode_info
+    
+    pop %di
+    pop %es
+    popa
+VESA_loop_init:
+    movw $(VESA_ret_str - VESA_stuff), %si
+    call print
+    
+    movw VESA_info_buffer - VESA_stuff + 14, %bx
+    mov VESA_info_buffer - VESA_stuff + 16, %fs
+    
+#define width_offset $16
+
+VESA_modes_loop:
+    mov %fs:(%bx), %ax
+    cmp $0xffff, %ax
+    je VESA_modes_loop_done
+    
+    push %ax
+    
+    mov %ax, %cx
+    mov $0x1100, %ax
+    mov %ax, %es
+    mov $0x4f01, %ax
+    mov $(VESA_mode_buffer - VESA_stuff), %di
+    
+    int $0x10
+    
+    cmp $0x004f, %ax
+    jne VESA_modes_error
+    
+VESA_compare_modes:
+    //check if width greater than width of currently chosen mode
+    mov VESA_mode_buffer - VESA_stuff + 18, %ax
+    cmp %ax, VESA_chosen_mode_buffer - VESA_stuff + 18
+    jg VESA_modes_loop_end
+    //TODO:change here to support higher widths
+    cmp $0x640, %ax
+    jg VESA_modes_loop_end
+VESA_width_not_lesser:
+
+    //check if height greater than width of currently chosen mode
+    mov VESA_mode_buffer - VESA_stuff + 20, %ax
+    cmp %ax, VESA_chosen_mode_buffer - VESA_stuff + 20
+    //TODO:change here to support taller hights
+    cmp $0x2d0, %ax
+    jg VESA_modes_loop_end
+
+    jg VESA_modes_loop_end
+VESA_height_not_lesser:
+    //check if number of bits equal to 32
+    mov VESA_mode_buffer - VESA_stuff + 25, %al
+    cmp $32, %al
+    
+    jne VESA_modes_loop_end
+
+VESA_number_bits_correct:
+    //check if linear frame buffer is supported
+    mov VESA_mode_buffer - VESA_stuff, %ax
+    and $0x90, %ax
+    cmp $0x90, %ax
+    
+    jne VESA_modes_loop_end
+
+VESA_linear_frame_buffer_supported:
+
+    //check if memory model is correct
+    mov VESA_mode_buffer - VESA_stuff + 27, %al
+    cmp $4, %al
+    je VESA_appropriate_memory_model
+    cmp $6, %al
+    je VESA_appropriate_memory_model
+    jmp VESA_modes_loop_end
+
+VESA_appropriate_memory_model:
+
+VESA_select_mode:
+    mov %cx, VESA_chosen_mode - VESA_stuff
+    call VESA_prefer_mode
+
+    jg VESA_modes_loop_end
+    
+VESA_modes_loop_end:
+    movw %cx, VESA_current_mode - VESA_stuff
+    
+    movw VESA_current_mode - VESA_stuff + 20, %ax
+    cmpw $0x640, %ax
+    //jl VESA_dont_print_info
+    
+    mov VESA_mode_buffer - VESA_stuff + 25, %al
+    cmp $16, %al
+    jne VESA_dont_print_info
+    
+    call VESA_print_chosen_mode_info
+VESA_dont_print_info:
+    pop %ax
+    add $2, %bx
+    jmp VESA_modes_loop
+VESA_modes_loop_done:
+
+    movw $(VESA_ret_str - VESA_stuff), %si
+    call print
+
+    call VESA_copy_back_mode
+    call VESA_print_chosen_mode_info
+
+    mov VESA_chosen_mode - VESA_stuff, %ax
+    cmpw $0xffff, %ax
+    je VESA_no_mode_found
+
+    //cli
+    //hlt
+
+VESA_set_mode:
+    mov $0x4f02, %ax
+    mov VESA_chosen_mode - VESA_stuff, %bx
+    or $0x4000, %bx
+    int $0x10
+    
+    jmp VESA_ret
+
+VESA_print_chosen_mode_info:
+    pusha
+    push %si
+    push %di
+    //mode number
+    mov VESA_current_mode - VESA_stuff, %ax
+    call print_hex
+    movw $(VESA_space_str - VESA_stuff), %si
+    call print
+    
+    //width
+    movw VESA_mode_buffer - VESA_stuff + 18, %ax
+    call print_hex
+    call print
+    
+    //height
+    movw VESA_mode_buffer - VESA_stuff + 20, %ax
+    call print_hex
+    call print
+    
+    //memory model
+    movw VESA_mode_buffer - VESA_stuff + 27, %ax
+    call print_hex
+    call print
+    
+    //bit depth
+    movb VESA_mode_buffer - VESA_stuff + 25, %al
+    movb $0, %ah
+    call print_hex
+
+    movw $(VESA_ret_str - VESA_stuff), %si
+    call print
+    
+    pop %di
+    pop %si
+    popa
+    ret
+
+VESA_no_mode_found:
+    movw $(VESA_no_mode_str - VESA_stuff), %si
+    call print
     cli
     hlt
     
+VESA_prefer_mode:
+    pusha
+    mov $0, %bx
+VESA_prefer_mode_loop:
     
+    movw (VESA_mode_buffer - VESA_stuff)(%bx), %ax
+    movw %ax, (VESA_chosen_mode_buffer - VESA_stuff)(%bx)
+    add $2, %bx
+    cmp $0x100, %bx
+    jl VESA_prefer_mode_loop
+    
+    popa
+    ret
+
+VESA_copy_back_mode:
+    pusha
+    
+    movw (VESA_chosen_mode - VESA_stuff), %ax
+    movw %ax, (VESA_current_mode - VESA_stuff)
+    
+    mov $0, %bx
+VESA_copy_back_mode_loop:
+    
+    movw (VESA_chosen_mode_buffer - VESA_stuff)(%bx), %ax
+    movw %ax, (VESA_mode_buffer - VESA_stuff)(%bx)
+    add $2, %bx
+    cmp $0x100, %bx
+    jl VESA_copy_back_mode_loop
+    
+    popa
+    ret
+
+VESA_modes_error:
+    add $2, %sp
+    jmp VESA_error
+
+VESA_invalid_signature:
+    movw $(VESA_invalid_signature_str - VESA_stuff), %si
+    call print
+    jmp VESA_ret
+
 VESA_error:
     movw $(VESA_error_str - VESA_stuff), %si
     call print
-    jmp VESA_ret
     cli
     hlt
     
 VESA_ret:
     //return to boot sector
+    pop %ds
+    pop %es
     popa
-    retf
     
+    retf
+
+.global VESA_chosen_mode
+.global VESA_chosen_mode_buffer
+.global VESA_mode_buffer
+
+
 VESA_info_buffer:
-    .space 0x20
+    .space 0x200
+VESA_current_mode:
+    .space 2
 VESA_mode_buffer:
     .space 0x100
-VESA_test_str:
+VESA_chosen_mode:
+    .word 0xffff
+VESA_chosen_mode_buffer:
+    .space 0x100
+
+
+VESA_dot_str:
+    .asciz "."
+VESA_ret_str:
+    .asciz "\n\r"
+VESA_space_str:
+    .asciz " "
+VESA_arrived_str:
     .asciz "VESA code reached\n\r"
 VESA_success_str:
-    .asciz "VESA info produced successfully\n\r"
+    .asciz "VESA info collected successfully\n\r"
 VESA_error_str:
     .asciz "Error collecting VESA info\n\r"
+VESA_invalid_signature_str:
+    .asciz "Invalid signature\n\r"
+VESA_valid_signature_str:
+    .asciz "Valid signature\n\r"
+VESA_test_str:
+    .asciz "VESA test string\n\r"
+VESA_no_mode_str:
+    .asciz "No supported VESA mode found\n\r"
 
 /* prints string in %ds:si */
 print:
+    pusha
+print_loop:
     xorb %bh, %bh
     movb $0x0E, %ah
 
@@ -86,9 +372,62 @@ print:
 
     /* print %al to screen */
     int $0x10
-    jmp print
+    jmp print_loop
 
-print_ret:  ret
+print_ret:
+    popa  
+    ret
+
+/*prints hex value from ax*/
+print_hex:
+    pusha
+    push %ds
+    
+    push %ax
+    mov %cs, %ax
+    mov %ax, %ds
+    pop %ax
+    
+    mov %ax, %cx
+    mov $0x0e, %ah
+    
+    mov %cx, %dx
+    shr $12, %dx
+    and $0xf, %dx
+    mov $(VESA_hex_str - VESA_stuff), %bx
+    add %dx, %bx
+    mov (%bx), %al
+    int $0x10
+    
+    mov %cx, %dx
+    shr $8, %dx
+    and $0xf, %dx
+    mov $(VESA_hex_str - VESA_stuff), %bx
+    add %dx, %bx
+    mov (%bx), %al
+    int $0x10
+    
+    mov %cx, %dx
+    shr $4, %dx
+    and $0xf, %dx
+    mov $(VESA_hex_str - VESA_stuff), %bx
+    add %dx, %bx
+    mov (%bx), %al
+    int $0x10
+    
+    mov %cx, %dx
+    shr $0, %dx
+    and $0xf, %dx
+    mov $(VESA_hex_str - VESA_stuff), %bx
+    add %dx, %bx
+    mov (%bx), %al
+    int $0x10
+    
+    pop %ds
+    popa
+    ret
+VESA_hex_str: .asciz "0123456789ABCDEF"
+
 
 .section .text
 
