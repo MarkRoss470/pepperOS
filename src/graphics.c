@@ -1,8 +1,8 @@
-#include "graphics.h"
-#include "font_mine.h"
-#include "screen.h"
-#include "util/strings.h"
-#include "util/math.h"
+#include <graphics.h>
+#include <font_mine.h>
+#include <screen.h>
+#include <util/strings.h>
+#include <util/math.h>
 
 uint32_t textColour = 0xffffff;
 uint32_t backgroundColour = 0x000000;

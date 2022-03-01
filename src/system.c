@@ -1,7 +1,7 @@
-#include "system.h"
-#include "screen.h"
-#include "graphics.h"
-#include "timer.h"
+#include <system.h>
+#include <screen.h>
+#include <graphics.h>
+#include <timer.h>
 
 #define NOTIFICATION_DURATION_TICKS (TIMER_TPS * 2)
 

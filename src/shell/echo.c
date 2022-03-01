@@ -1,7 +1,7 @@
-#include "echo.h"
+#include <shell/echo.h>
 
-#include "../graphics.h"
-#include "../util/strings.h"
+#include <graphics.h>
+#include <util/strings.h>
 
 int echo(int argc, char *argv[])
 {

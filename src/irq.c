@@ -1,9 +1,9 @@
-#include "irq.h"
-#include "idt.h"
-#include "isr.h"
-#include "graphics.h"
-#include "screen.h"
-#include "util/strings.h"
+#include <irq.h>
+#include <idt.h>
+#include <isr.h>
+#include <graphics.h>
+#include <screen.h>
+#include <util/strings.h>
 
 // PIC constants
 #define PIC1 0x20
@@ -31,18 +31,16 @@ static void (*handlers[32])(struct Registers *regs) = { 0 };
 char numberBuffer[30];
 uint32_t testColour = 0;
 static void stub(struct Registers *regs) {
-    /*
+    
     //if(regs->int_no != 32)
     {
-    	draw_text(itoa(regs->int_no, numberBuffer, 30), 210, 0, 0, testColour++);
-    	screen_swap();
+    	draw_text(itoa(regs->int_no, numberBuffer, 30), VESA_chosen_mode_buffer.width - 60, 0, 0, testColour++);
     }
     if(regs->int_no != 32)
     {
-    	draw_text(itoa(regs->int_no, numberBuffer, 30), 230, 0, 0, 0xffffff);
-    	screen_swap();
+    	draw_text(itoa(regs->int_no, numberBuffer, 30), VESA_chosen_mode_buffer.width - 30, 0, 0, 0xffffff);
     }
-    */
+    if(!(testColour & 0xff))screen_swap();
 
     if (regs->int_no <= 47 && regs->int_no >= 32) {
         if (handlers[regs->int_no - 32]) {

@@ -14,7 +14,7 @@ GFLAGS=
 CCFLAGS=-m32 -std=c11 -g -O2 -Wall -Wextra -Wpedantic -Wstrict-aliasing
 CCFLAGS+=-Wno-pointer-arith -Wno-unused-parameter
 CCFLAGS+=-nostdlib -ffreestanding -fno-pie -fno-stack-protector
-CCFLAGS+=-fno-builtin-function -fno-builtin
+CCFLAGS+=-fno-builtin-function -fno-builtin -Isrc/include
 ASFLAGS=
 LDFLAGS=
 
@@ -26,7 +26,7 @@ BOOTSECT_OBJS=$(patsubst src/%.S,build/%.o,$(BOOTSECT_SRCS))
 KERNEL_C_SRCS=$(shell find . -name "*.c")
 KERNEL_S_SRCS=$(filter-out $(BOOTSECT_SRCS), $(wildcard src/*.S))
 
-KERNEL_OBJS=$(patsubst ./src/%.c,./build/%.o,$(KERNEL_C_SRCS)) $(patsubst src/%.S,build/%.o,$(KERNEL_S_SRCS))
+KERNEL_OBJS=$(patsubst ./src/%.c,./build/%.o,$(KERNEL_C_SRCS)) $(patsubst src/%.S,build/%.o,$(KERNEL_S_SRCS)) build/image.o
 
 BOOTSECT=bootsect.bin
 KERNEL=kernel.bin
@@ -43,6 +43,13 @@ clean:
 	@echo $(KERNEL_H_SRCS)
 	@echo
 	@echo $(KERNEL_OBJS)
+
+../out.bin :
+	cd ..;python3 image.py 10
+
+build/image.o : ../out.bin
+	cp ../out.bin ./src/image.bin
+	objcopy -I binary -O elf32-i386 -B i386 src/image.bin build/image.o
 
 build/%.o : src/%.c
 	mkdir -p $(dir $@)
@@ -76,7 +83,7 @@ install: img
 	sudo dd if=boot.img of=/dev/sda status=progress
 
 qemu-mac: img
-	qemu-system-i386 -drive format=raw,file=$(IMG) -vga std -monitor stdio -S --gdb tcp::6000
+	qemu-system-i386 -drive format=raw,file=$(IMG) -vga std -monitor stdio #-S --gdb tcp::6000
 qemu-pulse: img
 	qemu-system-i386 -drive format=raw,file=$(IMG) -d cpu_reset -monitor stdio -device sb16 -audiodev pulseaudio,id=pulseaudio,out.frequency=48000,out.channels=2,out.format=s32
 

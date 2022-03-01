@@ -1,9 +1,9 @@
-#include "keyboard.h"
-#include "irq.h"
-#include "system.h"
-#include "timer.h"
-#include "graphics.h"
-#include "screen.h"
+#include <keyboard.h>
+#include <irq.h>
+#include <system.h>
+#include <timer.h>
+#include <graphics.h>
+#include <screen.h>
 
 u8 keyboard_layout_us[2][128] = {
     {

@@ -1,7 +1,7 @@
-#include "shell.h"
-#include "../util/strings.h"
-#include "../util/mem.h"
-#include "../graphics.h"
+#include <shell/shell.h>
+#include <util/strings.h>
+#include <util/mem.h>
+#include <graphics.h>
 
 int help(int argc, char *argv[]);
 
@@ -20,6 +20,7 @@ static const char shell_builtins_names[][30] = {
 	"poweroff",
 	"lsapic",
 	"calibrate",
+	"drawimage"
 };
 
 static int (*shell_builtins_functions[]) (int argc, char *argv[]) = {
@@ -36,7 +37,8 @@ static int (*shell_builtins_functions[]) (int argc, char *argv[]) = {
 	enableacpi,
 	poweroff,
 	lsapic,
-	calibrate_screen
+	calibrate_screen,
+	drawimage
 };
 
 int help(int argc, char *argv[])

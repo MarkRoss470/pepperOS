@@ -1,8 +1,8 @@
-#include "lspci.h"
+#include <shell/lspci.h>
 
-#include "../drivers/PCI.h"
-#include "../graphics.h"
-#include "../util/strings.h"
+#include <drivers/PCI.h>
+#include <graphics.h>
+#include <util/strings.h>
 
 char number[30];
 

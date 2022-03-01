@@ -1,6 +1,7 @@
-#include "timer.h"
-#include "isr.h"
-#include "irq.h"
+#include <timer.h>
+#include <isr.h>
+#include <irq.h>
+#include <util/math.h>
 
 #define PIT_A 0x40
 #define PIT_B 0x41
@@ -30,7 +31,7 @@ static void timer_set(int hz) {
 }
 
 u64 timer_get() {
-    return state.ticks;
+    return div64(mul64(state.ticks, 1000), TIMER_TPS);
 }
 
 static void timer_handler(struct Registers *regs) {

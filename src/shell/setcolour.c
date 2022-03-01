@@ -1,8 +1,8 @@
-#include "setcolour.h"
+#include <shell/setcolour.h>
 
-#include "../graphics.h"
-#include "../screen.h"
-#include "../util/strings.h"
+#include <graphics.h>
+#include <screen.h>
+#include <util/strings.h>
 
 int setcolour(int argc, char *argv[])
 {

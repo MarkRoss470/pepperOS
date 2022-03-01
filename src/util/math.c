@@ -1,4 +1,4 @@
-#include "math.h"
+#include <util/math.h>
 
 f64 fabs(f64 x) {
     return x < 0.0 ? -x : x;

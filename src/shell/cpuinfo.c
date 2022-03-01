@@ -1,7 +1,7 @@
-#include "cpuinfo.h"
+#include <shell/cpuinfo.h>
 
-#include "../util/strings.h"
-#include "../graphics.h"
+#include <util/strings.h>
+#include <graphics.h>
 #include <cpuid.h>
 
 int cpuinfo(int argc, char *argv[])

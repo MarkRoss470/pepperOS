@@ -1,4 +1,4 @@
-#include "idt.h"
+#include <idt.h>
 #include <stdint.h>
 
 struct __attribute__((__packed__)) IDTEntry{

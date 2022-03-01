@@ -1,14 +1,14 @@
-#include "util/strings.h"
-#include "util/types.h"
+#include <util/strings.h>
+#include <util/types.h>
 
-#include "screen.h"
-#include "idt.h"
-#include "isr.h"
-#include "irq.h"
-#include "timer.h"
-#include "system.h"
-#include "keyboard.h"
-#include "fpu.h"
+#include <screen.h>
+#include <idt.h>
+#include <isr.h>
+#include <irq.h>
+#include <timer.h>
+#include <system.h>
+#include <keyboard.h>
+#include <fpu.h>
 
 #include <stdint.h>
 #include "graphics.h"

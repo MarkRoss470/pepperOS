@@ -1,4 +1,4 @@
-#include "PCI.h"
+#include <drivers/PCI.h>
 //0..7 register offset
 //8..10 function number
 //11..15 device number

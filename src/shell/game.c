@@ -1,13 +1,13 @@
-#include "game.h"
+#include <shell/game.h>
 
-#include "../keyboard.h"
-#include "../timer.h"
-#include "../util/math.h"
-#include "../screen.h"
-#include "../graphics.h"
-#include "clear.h"
-#include "../system.h"
-#include "../util/strings.h"
+#include <keyboard.h>
+#include <timer.h>
+#include <util/math.h>
+#include <screen.h>
+#include <graphics.h>
+#include <shell/clear.h>
+#include <system.h>
+#include <util/strings.h>
 
 #define SCALE_FACTOR 1
 

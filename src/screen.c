@@ -87,11 +87,11 @@ void screen_init() {
 void scroll_screen(int pixels, uint32_t fillcolour)
 {
 	int offset = (pixels * VESA_chosen_mode_buffer.pitch / 4);
-	for(int i = 0; i < (SCREEN_SIZE - offset); i++)
+	for(int i = 0; i < (SCREEN_SIZE_RT - offset); i++)
 	{
 		_sbuffer[i] = _sbuffer[i + offset];
 	}
-	for(int i = SCREEN_SIZE - offset + 1; i < SCREEN_SIZE; i++)
+	for(int i = SCREEN_SIZE_RT - offset + 1; i < SCREEN_SIZE_RT; i++)
 	{
 		_sbuffer[i] = fillcolour;
 	}

@@ -1,9 +1,9 @@
-#include "clear.h"
+#include <shell/clear.h>
 
-#include "../screen.h"
-#include "../graphics.h"
-#include "../keyboard.h"
-#include "../util/strings.h"
+#include <screen.h>
+#include <graphics.h>
+#include <keyboard.h>
+#include <util/strings.h>
 
 int clear(int argc, char *argv[])
 {

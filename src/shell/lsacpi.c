@@ -1,11 +1,12 @@
-#include "lsacpi.h"
+#include <shell/lsacpi.h>
 
-#include "../drivers/ACPI.h"
-#include "../graphics.h"
-#include "../util/mem.h"
-#include "../util/strings.h"
-#include "../util/IO.h"
-#include "shell.h"
+#include <drivers/ACPI.h>
+#include <graphics.h>
+#include <util/mem.h>
+#include <util/strings.h>
+#include <util/IO.h>
+#include <shell/shell.h>
+#include <screen.h>
 
 static const char SDTs[][5] = {
 	"APIC",
@@ -176,7 +177,9 @@ int enableacpi(int argc, char *argv[])
 
 int poweroff(int argc, char *argv[])
 {
-	
+	printf("Don't try it\n");
+	return(1);
+
 	if(!ACPIEnabled)
 	{
 		printf("Enable ACPI first!");
@@ -222,11 +225,12 @@ int poweroff(int argc, char *argv[])
 	if(intptr[i] == 0x0a)i++;
 	SLP_TYPb = intptr[i]<<10;
 	
-	printf("%#x %#x %#x", SLP_TYPa, fadt->PM1aControlBlock, fadt->PM1bControlBlock);
+	uint16_t SLP_EN = fadt->PM1bControlBlock & (1 << 13);
 	
-	//outw(fadt->PM1aControlBlock, SLP_TYPa | 0x2000);
+	printf("%#x %#x %#x %d", SLP_TYPa, fadt->PM1aControlBlock, fadt->PM1bControlBlock, SLP_EN);
+	screen_swap();
+	outw_p(fadt->PM1aControlBlock, SLP_TYPa | SLP_EN);
 	return 0;
-	
 }
 
 int lsapic(int argc, char* argv[])
