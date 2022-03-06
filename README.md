@@ -149,8 +149,6 @@ Project Link: [https://github.com/MarkRoss470/pepperOS](https://github.com/MarkR
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
-
 * [osdev.org wiki](https://wiki.osdev.org)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
