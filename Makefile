@@ -76,19 +76,26 @@ img: dirs bootsect kernel
 	dd if=./bin/$(KERNEL) of=$(IMG) conv=notrunc bs=512 seek=1
 	dd if=/dev/zero of=$(IMG) bs=1 count=1 seek=130560
 
-iso: img
-	mkisofs -pad -b $(img) -R -o boot.iso $(img)
-
 install: img
 	sudo dd if=boot.img of=/dev/sda status=progress
 
 qemu-mac: img
 	qemu-system-i386 -drive format=raw,file=$(IMG) -vga std -monitor stdio #-S --gdb tcp::6000
+debug: img
+	qemu-system-i386 -drive format=raw,file=$(IMG) -vga std -monitor stdio -S --gdb tcp::6000
 qemu-pulse: img
 	qemu-system-i386 -drive format=raw,file=$(IMG) -d cpu_reset -monitor stdio -device sb16 -audiodev pulseaudio,id=pulseaudio,out.frequency=48000,out.channels=2,out.format=s32
 
 qemu-sdl: img
 	qemu-system-i386 -display sdl -drive format=raw,file=$(IMG) -d cpu_reset -monitor stdio -audiodev sdl,id=sdl,out.frequency=48000,out.channels=2,out.format=s32 -device sb16,audiodev=sdl
+	
+#requires img so that broken code is not uploaded
+github-push: img
+	git add .
+	#will prompt user for commit message
+	git commit
+	#stored in parent directory so that the github key is not stored in the repo
+	git push -u https://$(shell cat ../ghkey)@github.com/MarkRoss470/pepperOS main
 
 qemu-no-audio: img
 	qemu-system-i386 -drive format=raw,file=$(IMG) -d cpu_reset -monitor stdio

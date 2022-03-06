@@ -118,6 +118,7 @@ void handle_keyboard()
 }
 
 void _main(u32 magic) {
+	memory_init();
 	screen_init();
 	idt_init();
 	isr_init();
